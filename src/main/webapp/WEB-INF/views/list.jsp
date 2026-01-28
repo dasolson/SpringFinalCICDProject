@@ -34,7 +34,7 @@ p {
 				          <div class="caption">
 				              <p>${vo.name }</p>
 				          </div>
-				          </a>   
+				          </a>
 				      </div>
 				  </div>
 			</c:forEach>

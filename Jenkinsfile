@@ -3,7 +3,7 @@ pipeline {
 	
 	environment {
 		DOCKER_USER = 'dasolson'
-		IMAGE_NAME = '${DOCKER_USER}/boot-app:latest'	
+		IMAGE_NAME = "${DOCKER_USER}/boot-app:latest"
 		CONTAINER_NAME = 'boot-app'
 	}
 	
@@ -19,7 +19,7 @@ pipeline {
 			steps {
 				echo 'Gradle Build'
 				sh '''
-					chmod +x gradlew
+					chmod +x gradlew || true
 					./gradlew clean build -x test
 				   '''
 			}
@@ -68,7 +68,7 @@ pipeline {
 					docker pull ${IMAGE_NAME}
 					
 					docker run --name ${CONTAINER_NAME} \
-					-it -d -p 9090:9090 \
+					-d -p 9090:9090 \
 					${IMAGE_NAME}
 				   '''
 			}

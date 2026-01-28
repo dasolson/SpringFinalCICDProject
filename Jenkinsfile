@@ -53,7 +53,7 @@ pipeline {
 			echo 'Docker 실행 성공'
 		}
 		failure {
-			echo 'Docker 실행 실패'
+			echo 'Docker 실행 실패'   
 		}
 	}
 }	 

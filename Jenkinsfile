@@ -1,26 +1,26 @@
 pipeline {
-	agent any
-	
-	environment {
-		DOCKER_USER = "dasolson"
-		IMAGE_NAME = "${DOCKER_USER}/boot-app:latest"
-		CONTAINER_NAME = "boot-app"
+    agent any
+
+    environment {
+	   DOCKER_USER = "dasolson"
+	   IMAGE_NAME = "${DOCKER_USER}/boot-app:latest"
+	   CONTAINER_NAME = "boot-app"	
 	}
 	
-	stages {
-		stage('Checkout') {
-			steps {
-				echo 'Git Checkout'
-				checkout scm 
-			}
-		}
-		
-		stage('Gradlew Build') {
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Git Checkout'
+                checkout scm
+            }
+        }
+        
+        stage('Gradlew Build') {
 			steps {
 				echo 'Gradle Build'
 				sh '''
-					chmod +x gradlew || true
-					./gradlew clean build -x test
+				    chmod +x gradlew
+				    ./gradlew clean build -x test
 				   '''
 			}
 		}
@@ -29,21 +29,23 @@ pipeline {
 			steps {
 				echo 'Docker Image Build'
 				sh '''
-					docker build -t ${IMAGE_NAME} .
+				    docker build -t ${IMAGE_NAME} .
 				   '''
 			}
 		}
 		
 		stage('Docker Hub Login') {
 			steps {
-				echo 'Docker Hub Login'
+				echo 'DockerHub Login'
 				withCredentials([usernamePassword(
 					credentialsId: 'dockerhub-credential',
 					usernameVariable: 'DOCKER_ID',
 					passwordVariable: 'DOCKER_PW'
-				)]) {
+				)]){
 					sh '''
-						echo $DOCKER_PW | docker login -u $DOCKER_ID --password-stdin
+					   echo "DOCKER_ID=$DOCKER_ID,DOCKER_PW=$DOCKER_PW"
+					   
+					   docker login -u $DOCKER_ID -p $DOCKER_PW
 					   '''
 				}
 			}
@@ -51,9 +53,9 @@ pipeline {
 		
 		stage('DockerHub Push') {
 			steps {
-				echo 'DockerHub Push'
+				echo 'Docker Hub Push'
 				sh '''
-					docker push ${IMAGE_NAME}
+				   docker push ${IMAGE_NAME}
 				   '''
 			}
 		}
@@ -62,25 +64,25 @@ pipeline {
 			steps {
 				echo 'Docker Run'
 				sh '''
-					docker stop ${CONTAINER_NAME} || true
-					docker rm ${CONTAINER_NAME} || true
-					
-					docker pull ${IMAGE_NAME}
-					
-					docker run --name ${CONTAINER_NAME} \
-					-d -p 9090:9090 \
-					${IMAGE_NAME}
+				    docker stop ${CONTAINER_NAME} || true
+				    docker rm ${CONTAINER_NAME} || true
+				    
+				    docker pull ${IMAGE_NAME}
+				    
+				    docker run --name ${CONTAINER_NAME} \
+				    -it -d -p 9090:9090 \
+				    ${IMAGE_NAME}
 				   '''
 			}
 		}
-	}
-	
-	post {
+    }
+    
+    post {
 		success {
 			echo 'Docker 실행 성공'
 		}
 		failure {
-			echo 'Docker 실행 실패'   
+			echo 'Docker 실행 실패'
 		}
 	}
-}	 
+}
